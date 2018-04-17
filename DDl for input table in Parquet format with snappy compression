@@ -1,0 +1,11 @@
+set parquet.compression=SNAPPY;                                                                
+
+CREATE EXTERNAL TABLE performance_test_source_data_parquet_snappy (
+`date_time` string,
+`instance_type` string,
+`os_type` string,
+`availability_zone` string,
+`spot_price` string
+)
+STORED As TEXTFILE
+LOCATION 's3://sv/performance_test/parquet_snappy/';
