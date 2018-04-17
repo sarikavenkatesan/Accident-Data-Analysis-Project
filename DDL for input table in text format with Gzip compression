@@ -1,0 +1,26 @@
+CREATE EXTERNAL TABLE performance_test_source_data_gzip_raw (
+`date_time` string,
+`instance_type` string,
+`os_type` string,
+`availability_zone` string,
+`spot_price` string
+)
+STORED As TEXTFILE
+LOCATION 's3://sv/performance_test/gzip/';
+
+
+// Parameters to pass for compression
+set hive.exec.compress.output=true;                                                                                         
+set mapreduce.output.fileoutputformat.compress=true;                                                                        
+set mapreduce.output.fileoutputformat.compress.codec=org.apache.hadoop.io.compress.GzipCodec;                               
+set mapreduce.output.fileoutputformat.compress.type=BLOCK;                                                                  
+
+
+// Overwritting the raw text file to gzip format
+INSERT OVERWRITE TABLE performance_test_source_data_gzip_raw                                                                       
+SELECT date_time,                                                                                                           
+       instance_type,                                                                                                       
+       os_type,                                                                                                             
+       availability_zone,                                                                                                   
+       spot_price                                                                                                           
+FROM historical_spot_prices_source_text;
