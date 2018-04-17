@@ -1,0 +1,66 @@
+import logging
+import sys
+
+try:
+    from pyspark import SparkConf, SparkContext
+    from pyspark.sql import SparkSession
+    from pyspark.sql.types import *
+    from pyspark.sql.functions import *
+    from pyspark.storagelevel import StorageLevel
+except ImportError as e:
+    print ("Error importing Spark Modules", e)
+    sys.exit(1)
+
+logger = logging.getLogger("S3_Read_S3_Write Process")
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
+
+def main(argv):
+    sourceDatabaseName = sys.argv[1]
+    sourceTableName = sys.argv[2]
+    targetDatabaseName = sys.argv[3]
+    targetTableName = sys.argv[4]
+
+    logger.info('sourceDatabaseName : ' + sourceDatabaseName)
+    logger.info('sourceTableName : ' + sourceTableName)
+    logger.info('targetDatabaseName : ' + targetDatabaseName)
+    logger.info('targetTableName : ' + targetTableName)
+
+    # Spark session builder
+    spark = SparkSession.builder.appName("S3_Read_S3_Write_Performance_Test") \
+        .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer") \
+        .config("spark.shuffle.compress", "true") \
+        .config("spark.scheduler.mode", "FAIR") \
+        .enableHiveSupport() \
+        .getOrCreate()
+  
+    logger.info('Spark session created..')
+
+    sourceDataDF = spark.table("{0}.{1}".format(sourceDatabaseName,sourceTableName))
+
+    # customSchema = StructType([StructField("date_time", StringType(), True),
+                                 StructField("instance_type", StringType(), True),
+                                 StructField("os_type", StringType(), True),
+                                 StructField("availability_zone", StringType(), True),
+                                 StructField("spot_price", StringType(), True)])
+
+    # sourceDataDF2 = spark.read.format("com.databricks.spark.csv").option("header", "false").schema(customSchema).load("s3://sv/source_original_raw_data/*")
+
+    logger.info('sourceDataDF created..')
+
+    sourceDataDF.write.insertInto("{0}.{1}".format(targetDatabaseName,targetTableName), overwrite = True)
+
+    # sourceDataDF.write.mode("overwrite").format("csv").save("s3://sv/performance_test_output_files/text_test_2/")
+
+    logger.info('Successfully inserted sourceDataDF into the given target table..')
+
+if __name__ == "__main__":
+    if len(sys.argv) != 5:
+        print('Number of arguments : ', len(sys.argv))
+        print('Argument List: ', str(sys.argv))
+        raise Exception('Incorrect number of arguments passed!')
+
+    print('Number of arguments : ', len(sys.argv))
+
+    # Calling main function
+    main(sys.argv[1:])
