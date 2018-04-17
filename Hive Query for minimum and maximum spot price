@@ -1,0 +1,6 @@
+SELECT date_time, instance_type, spot_price, availability_zone, DENSE_RANK() OVER 
+(PARTITION BY instance_type ORDER BY spot_price DESC) AS rank
+FROM historical_spot_prices 
+where rank = 1 
+group by instance_type, spot_price, availability_zone, date_time
+order by instance_type, spot_price;
