@@ -1,6 +1,32 @@
-SELECT date_time, instance_type, spot_price, availability_zone, DENSE_RANK() OVER 
-(PARTITION BY instance_type ORDER BY spot_price DESC) AS rank
-FROM historical_spot_prices 
-where rank = 1 
-group by instance_type, spot_price, availability_zone, date_time
-order by instance_type, spot_price;
+SELECT a.instance_type, a.spot_price, a.availability_zone, max(a.date_time) as max_date_time, a.rank
+FROM 
+(SELECT date_time,
+        instance_type, 
+        spot_price, 
+        availability_zone, 
+        DENSE_RANK() OVER (PARTITION BY instance_type ORDER BY spot_price DESC) AS rank
+ FROM historical_spot_prices) a
+WHERE a.rank = 1
+GROUP BY a.instance_type, a.spot_price, a.availability_zone,a.rank
+ORDER BY a.instance_type,a.rank;
+
+SELECT a.instance_type, a.spot_price, a.availability_zone, a.price_val_order, max(a.date_time) as max_date_time
+FROM
+(SELECT date_time,
+       instance_type, 
+       spot_price, 
+       availability_zone, 
+       'max' AS price_val_order,
+       DENSE_RANK() OVER (PARTITION BY instance_type ORDER BY spot_price DESC) AS rank
+FROM historical_spot_prices
+UNION ALL
+SELECT date_time,
+       instance_type, 
+       spot_price, 
+       availability_zone,
+       'min' AS price_val_order,
+       DENSE_RANK() OVER (PARTITION BY instance_type ORDER BY spot_price DESC) AS rank
+FROM historical_spot_prices) a
+WHERE a.rank = 1
+GROUP BY a.instance_type, a.spot_price, a.availability_zone, a.price_val_order
+ORDER BY a.instance_type, a.price_val_order;
