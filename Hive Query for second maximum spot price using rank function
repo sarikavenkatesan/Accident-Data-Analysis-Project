@@ -1,0 +1,8 @@
+SELECT a.instance_type, a.spot_price, a.availability_zone, max(a.date_time) as max_date_time, a.rank
+FROM 
+(SELECT date_time,instance_type, spot_price, availability_zone, DENSE_RANK() OVER 
+ (PARTITION BY instance_type ORDER BY spot_price DESC) AS rank
+ FROM historical_spot_prices) a
+WHERE a.rank >0 and a.rank < 3 
+GROUP BY a.instance_type, a.spot_price, a.availability_zone,a.rank
+ORDER BY a.instance_type,a.rank;
