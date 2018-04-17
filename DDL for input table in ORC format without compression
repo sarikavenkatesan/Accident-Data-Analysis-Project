@@ -1,0 +1,13 @@
+SET hive.default.fileformat=Orc;                                                                                            
+set orc.compression=NONE;
+
+
+CREATE EXTERNAL TABLE performance_test_source_data_orc (
+`date_time` string,
+`instance_type` string,
+`os_type` string,
+`availability_zone` string,
+`spot_price` string
+)
+STORED As TEXTFILE
+LOCATION 's3://sv/performance_test/orc/';
