@@ -1,0 +1,15 @@
+set hive.exec.compress.output=true;                                                                                         
+set mapreduce.output.fileoutputformat.compress=true;                                                                        
+set mapreduce.output.fileoutputformat.compress.type=BLOCK;                                                                  
+set hive.exec.compress.output=true;                                                                                         
+set avro.output.codec=snappy;                                                                
+
+CREATE EXTERNAL TABLE performance_test_source_data_avro_snappy (
+`date_time` string,
+`instance_type` string,
+`os_type` string,
+`availability_zone` string,
+`spot_price` string
+)
+STORED As TEXTFILE
+LOCATION 's3://sv/performance_test/avro_snappy/';
