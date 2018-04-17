@@ -1,0 +1,5 @@
+/ Command to run in Spark client mode
+spark-submit --master yarn --deploy-mode client --driver-memory 10G --num-executors 8 --executor-memory 10G --executor-cores 8 --conf spark.scheduler.mode=FAIR s3_read_s3_write_text.py default historical_spot_prices_source_text default historical_spot_prices_output_text
+
+// Writting output to different location
+ALTER TABLE `historical_spot_prices_output_text` SET LOCATION   's3://sv/performance_test_output_files/text/';
